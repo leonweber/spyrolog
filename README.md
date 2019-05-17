@@ -57,4 +57,4 @@ SCORE DEPTH UNIFICATION1|UNIFICATION2|...|UNIFICATIONN PROOF_TREE
 * `SCORE`: The score of the proof
 * `DEPTH`: The depth of the proof
 * `UNIFICATION1|UNIFICATION2|...|UNIFICATIONN`: All unifications employed in the proof, e.g. `is_located_in<>country|contry<>country`
-* `PROOF_TREE`: A linearization of the proof tree which can be deliniearized with [this function](https://github.com/leonweber/nlprolog/blob/6b836ae2a03496fd55e963dd35877e55eac672a0/visualize_proof_tree.py#L56).
+* `PROOF_TREE`: A linearization of the proof tree which can be delinearized with [this function](https://github.com/leonweber/nlprolog/blob/6b836ae2a03496fd55e963dd35877e55eac672a0/visualize_proof_tree.py#L56)
