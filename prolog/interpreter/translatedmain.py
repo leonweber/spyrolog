@@ -47,20 +47,29 @@ class ContinueContinuation(Continuation):
 
 class GetAllScoresContinuation(Continuation):
     nextcont = None
-    def __init__(self, engine, scores, similarity, depths, rules, unifications):
+    def __init__(self, engine, scores, similarity, depths, rules, unifications, min_width):
         Continuation.__init__(self, engine, DoneSuccessContinuation(engine))
         self.scores = scores
         self.similarity = similarity
         self.depths = depths
         self.rules = rules
         self.unifications = unifications
+        self.min_width = min_width
 
     def activate(self, fcont, heap):
-        self.scores.append(heap.score)
-        self.similarity.threshold = max(heap.score, self.similarity.threshold)
-        self.depths.append(heap.depth)
-        self.rules.append(heap.rules)
-        self.unifications.append(heap.unifications)
+        width = 0
+        for r in heap.rules:
+            if ':-' in r:
+                w = r.count("),") + 1
+
+                if w > width:
+                    width = w
+        if width >= self.min_width:
+            self.scores.append(heap.score())
+            self.similarity.threshold = max(heap.score(), self.similarity.threshold)
+            self.depths.append(heap.depth)
+            self.rules.append(heap.rules)
+            self.unifications.append(heap.unifications)
         raise error.UnificationFailed
 
 def var_representation(var_to_pos, engine, write, heap):

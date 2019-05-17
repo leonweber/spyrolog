@@ -18,7 +18,7 @@ from rpython.rlib import jit
 
 term.DEBUG = False
 
-def get_max_info(scores, depths, rules, unifications, min_width):
+def get_max_info(scores, depths, rules, unifications):
     max_score = 0.0
     max_depth = 0
     max_rule = []
@@ -29,15 +29,7 @@ def get_max_info(scores, depths, rules, unifications, min_width):
         rule = rules[i]
         unification = unifications[i]
 
-        width = 0
-        for r in rule:
-            if ':-' in r:
-                w = r.count("),") + 1
-
-                if w > width:
-                    width = w
-
-        if width >= min_width and score > max_score:
+        if score > max_score:
             max_score = score
             max_depth = depth
             max_rule = rule
@@ -48,7 +40,7 @@ def get_max_info(scores, depths, rules, unifications, min_width):
 
 def entry_point(argv):
     if len(argv) != 8:
-        print("Usage: spyrolog PROGRAM SIMILARITIES QUERY1|QUERY2|...|QUERYN MAX_DEPTH LAMBDA_CUT1|LAMBDA_CUT2|...|LAMBDA_CUTN T-NORM MIN_WIDTH")
+        print("Usage: spyrolog PROGRAM SIMILARITIES QUERY1|QUERY2|...|QUERYN MAX_DEPTH LAMBDA_CUT1|LAMBDA_CUT2|...|LAMBDA_CUTN E-TNORM|P-TNORM MIN_WIDTH")
         return 1
 
     program_fname = argv[1]
@@ -56,10 +48,10 @@ def entry_point(argv):
     queries = argv[3]
     max_depth = int(argv[4])
     lambda_cuts = [float(i) for i in argv[5].split('|')]
-    t_norm = argv[6]
+    entity_tnorm, predicate_tnorm = argv[6].split('|')
     min_width = int(argv[7])
 
-    sim = get_similarity_from_file(sim_fname, 0, t_norm)
+    sim = get_similarity_from_file(sim_fname, 0, entity_tnorm, predicate_tnorm)
     e = Engine(load_system=False, similarity=sim, max_depth=max_depth)
     e.modulewrapper.current_module = e.modulewrapper.user_module
     with open(program_fname) as f:
@@ -75,7 +67,7 @@ def entry_point(argv):
         sim.lambda_cut = cut
         sim.reset_threshold()
         sim.query_idx = query_idx
-        collector = GetAllScoresContinuation(e, scores, sim, depths, rules, unifications)
+        collector = GetAllScoresContinuation(e, scores, sim, depths, rules, unifications, min_width)
         e.max_depth = max_depth
 
         goals, var_to_pos = e.parse(query)
@@ -84,7 +76,7 @@ def entry_point(argv):
         try:
             e.run_query_in_current(goal, collector)
         except UnificationFailed:
-            info = get_max_info(scores, depths, rules, unifications, min_width)
+            info = get_max_info(scores, depths, rules, unifications)
             if info[0] > 0:
                 print info[0], info[1], '|'.join(info[3]), query + ''.join(info[2])
             else:

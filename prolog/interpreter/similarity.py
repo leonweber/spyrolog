@@ -3,8 +3,8 @@ from prolog.interpreter.memo import EnumerationMemo
 from rpython.rlib.objectmodel import specialize
 
 
-def get_similarity_from_file(path, lambda_cut, tnorm):
-    similarity = Similarity(lambda_cut, tnorm)
+def get_similarity_from_file(path, lambda_cut, entity_tnorm, predicate_tnorm):
+    similarity = Similarity(lambda_cut, entity_tnorm, predicate_tnorm)
     with open(path) as f:
         text = f.read()
         for line in text.split('\n'):
@@ -36,12 +36,13 @@ def term_to_key(term):
 
 
 class Similarity(object):
-    def __init__(self, threshold, tnorm='prod'):
+    def __init__(self, threshold, entity_tnorm='prod', predicate_tnorm='prod'):
         self._table = {}
         self._domain = {}
         self.lambda_cut = threshold
         self.threshold = threshold
-        self.tnorm_name = tnorm
+        self.entity_tnorm_name = entity_tnorm
+        self.predicate_tnorm_name = predicate_tnorm
         self.rule_scores = {}
         self.query_idx = 0
 
@@ -105,13 +106,19 @@ class Similarity(object):
     def reset_threshold(self):
         self.threshold = self.lambda_cut
 
-    def tnorm(self, a, b):
-        if self.tnorm_name == 'prod':
+    def function_tnorm(self, a, b):
+        return self.tnorm(a,b, self.predicate_tnorm_name)
+
+    def term_tnorm(self, a, b):
+        return self.tnorm(a,b, self.entity_tnorm_name)
+
+    def tnorm(self, a, b, name):
+        if name == 'prod':
             return a*b
-        elif self.tnorm_name == 'luk':
+        elif name == 'luk':
             return max(0, a+b-1)
-        elif self.tnorm_name == 'min':
+        elif name == 'min':
             return min(a, b)
         else:
-            raise ValueError("Invalid t-norm " + self.tnorm_name)
+            raise ValueError("Invalid t-norm " + name)
 

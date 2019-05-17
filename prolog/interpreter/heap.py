@@ -22,10 +22,12 @@ class Heap(object):
         self.rules = []
         self.unifications = []
         if prev is None:
-            self.score = 1.0
+            self.entity_score = 1.0
+            self.predicate_score = 1.0
             self.depth = 0
         else:
-            self.score = prev.score
+            self.entity_score = prev.entity_score
+            self.predicate_score = prev.predicate_score
             self.depth = prev.depth
             self.rules += prev.rules
             self.unifications += prev.unifications
@@ -48,6 +50,9 @@ class Heap(object):
         if self._is_created_in_self(attvar):
             return
         self._add_entry_trail_attrs(attvar, index, value)
+
+    def score(self):
+        return self.entity_score * self.predicate_score
 
     def _add_entry_trail_attrs(self, attvar, index, value):
         entry = (attvar, index, value)
@@ -155,6 +160,7 @@ class Heap(object):
         """ Remove a heap that is no longer needed (usually due to a cut) from
         a chain of frames. """
         self.discarded = True
+        raise NotImplementedError
         if current_heap.prev is self:
             current_heap._discard_try_remove_current_trail(self)
             if current_heap.trail_attrs is not None:
@@ -163,9 +169,6 @@ class Heap(object):
             # move the variable bindings from the discarded heap to the current
             # heap
             self._discard_move_bindings_to_current(current_heap)
-
-            # move score from discarded heap to current heap
-            current_heap.score = self.score
 
             if self.trail_attrs is not None:
                 if current_heap.trail_attrs is not None:

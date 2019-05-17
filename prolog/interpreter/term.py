@@ -631,7 +631,7 @@ class Atom(Callable):
             else:
                 score = similarity.get_score_signatures(self.signature(), other.signature())
                 heap.unifications.append(self.signature().name +','+other.signature().name)
-                heap.score = similarity.tnorm(score, heap.score)
+                heap.entity_score = similarity.term_tnorm(score, heap.entity_score)
 
     def copy_standardize_apart(self, heap, env):
         return self, True

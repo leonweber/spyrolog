@@ -131,8 +131,10 @@ class Rule(object):
         env = [None] * self.env_size_head
         #i = similarity.query_idx
         i = 0
-        heap.score = similarity.tnorm(self.scores[i], heap.score)
-        if heap.score < similarity.threshold:
+        old_predicate_score = heap.predicate_score
+        heap.predicate_score = similarity.function_tnorm(self.scores[i], heap.predicate_score)
+        if heap.score() < similarity.threshold:
+            heap.predicate_score = old_predicate_score
             raise UnificationFailed
         if self.headargs is not None:
             assert isinstance(head, Callable)
@@ -173,29 +175,30 @@ class Rule(object):
         return first, copy
 
     @jit.unroll_safe
-    def find_applicable_rule(self, query, similarity=None):
+    def find_applicable_rule(self, query, heap=None, similarity=None):
         # This method should do some quick filtering on the rules to filter out
         # those that cannot match query. Here is where e.g. indexing should
         # occur.
         while self is not None:
-            if self.headargs is not None:
-                assert isinstance(query, Callable)
-                for i in range(len(self.headargs)):
-                    arg2 = self.headargs[i]
-                    arg1 = query.argument_at(i)
-                    if not arg2.quick_unify_check(arg1, similarity=similarity):
-                        break
+            if self.scores[0] * heap.predicate_score >= similarity.threshold:
+                if self.headargs is not None:
+                    assert isinstance(query, Callable)
+                    for i in range(len(self.headargs)):
+                        arg2 = self.headargs[i]
+                        arg1 = query.argument_at(i)
+                        if not arg2.quick_unify_check(arg1, similarity=similarity):
+                            break
+                    else:
+                        return self
                 else:
                     return self
-            else:
-                return self
             self = self.next
         return None
 
-    def find_next_applicable_rule(self, query, similarity=None):
+    def find_next_applicable_rule(self, query, heap=None, similarity=None):
         if self.next is None:
             return None
-        return self.next.find_applicable_rule(query, similarity=similarity)
+        return self.next.find_applicable_rule(query, heap=heap, similarity=similarity)
     
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.__dict__ == other.__dict__

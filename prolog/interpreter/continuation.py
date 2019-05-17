@@ -240,7 +240,7 @@ class Engine(object):
         function = self._get_function(signature, module, query)
         query = function.add_meta_prefixes(query, module.nameatom)
         startrulechain = jit.hint(function.rulechain, promote=True)
-        rulechain = startrulechain.find_applicable_rule(query, self.similarity)
+        rulechain = startrulechain.find_applicable_rule(query, heap, self.similarity)
         if rulechain is None:
             raise error.UnificationFailed
         if heap.depth > self.max_depth:
@@ -306,7 +306,7 @@ class Engine(object):
 
 
 def _log_meta_info(heap, rule):
-    heap.rules.append('|'+str(heap.score)+'|'+rule.source)
+    heap.rules.append('|'+str(heap.score())+'|'+rule.source)
 
 
 def _make_rule_conts(engine, scont, fcont, heap, query, rulechain):
@@ -314,7 +314,7 @@ def _make_rule_conts(engine, scont, fcont, heap, query, rulechain):
     if rule.contains_cut:
         scont = CutScopeNotifier.insert_scope_notifier(
                 engine, scont, fcont)
-    restchain = rule.find_next_applicable_rule(query, similarity=engine.similarity)
+    restchain = rule.find_next_applicable_rule(query, heap=heap, similarity=engine.similarity)
 
     if restchain is not None:
         fcont = UserCallContinuation.make(query.arguments(), engine, scont, fcont, heap, restchain)
