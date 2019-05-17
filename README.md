@@ -17,7 +17,7 @@ This is highly experimental research code which is not suitable for production u
 ### sPyrolog Programs
 A sPyrolog program consists of two files:
 
-The `facts` file contains the facts and rules of the Prolog program in the following syntax: `[statement] = [score]`
+The `facts` file contains the facts and rules of the Prolog program in the following syntax: `[statement] = [score]`.
 A very simple example program would be:
 
 ```
