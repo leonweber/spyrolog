@@ -11,6 +11,12 @@ sPyrolog is written in RPython and can be compiled with
 ## Usage
 While sPyrolog should support arbitrary Prolog programs, it has been written for use in [NLProlog](https://github.com/leonweber/nlprolog) and was only tested in this context.
 
+If you use sPyrolog in your work, please cite our ACL 2019 paper:
+
+```
+L. Weber, P. Minervini, J. Münchmeyer, U. Leser and T. Rocktäschel. “NLProlog: Reasoning with Weak Unification for Question Answering in Natural Language.” ACL 2019, Florence, Italy
+```
+
 This is highly experimental research code which is not suitable for production usage. We do not provide warranty of any kind. Use at your own risk.
 
 
